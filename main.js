@@ -10,7 +10,7 @@ form.addEventListener("submit", async (e) => {
   addMessage("user", userMessage);
   input.value = "";
 
-  const response = await askAI(userMessage);
+  const response = await askGemini(userMessage);
   addMessage("bot", response);
 });
 
@@ -22,18 +22,17 @@ function addMessage(sender, text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-async function askAI(prompt) {
-  const apiKey = "AIzaSyBTc-fPPMhpguGJirTe6CG7HYjGLe6YgfI"; // Regénère la après !
-  const url = "https://generativelanguage.googleapis.com/v1beta3/models/chat-bison-001:generateMessage?key=" + apiKey;
+async function askGemini(prompt) {
+  const apiKey = "AIzaSyBTc-fPPMhpguGJirTe6CG7HYjGLe6YgfI"; // Change la après test
+  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
 
   const body = {
-    prompt: {
-      messages: [
-        {
-          content: prompt
-        }
-      ]
-    }
+    contents: [
+      {
+        parts: [{ text: prompt }],
+        role: "user"
+      }
+    ]
   };
 
   try {
@@ -46,8 +45,9 @@ async function askAI(prompt) {
     });
 
     const data = await res.json();
-    return data.candidates?.[0]?.content || "Pas de réponse de l'IA.";
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "❌ Aucune réponse de Gemini.";
   } catch (err) {
-    return "Erreur lors de la communication avec l'API.";
+    console.error(err);
+    return "❌ Erreur lors de la requête API.";
   }
 }
